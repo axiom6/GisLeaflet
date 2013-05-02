@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Layers GeoJSON and Zoom</title>
+    <link   href="../lib/leaflet.css" rel="stylesheet">
+    <script  src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
+    <script  src="../lib/jquery-2.0.0.js"></script>
+    <script  src="../lib/leaflet.js"></script>
+    <script  src="../lib/Google.js"></script>
+  <head>
+  <body style="background:black;">
+    <div id="MAP" style="position:absolute; top:1em; left:1em; right:1em; bottom:1em; border:2px solid black;"></div>
+    <script>
+      var Gis = {};  // Create one global to attach Gis variables  and functions to to
+
+      // Callback for processing each feature in GeoJSON, here we enable click for zooming
+      Gis.onFeatureLayer = function( feature, layer ) {
+        var callZoom = function(e)     // Closure that closes on feature layer arguemnts
+          { Gis.zoomFeatureLayer( e, feature, layer ); };
+        layer.on( 'click', callZoom  ); };
+
+      // Zoom map to layer bounds and pan to the layer's center
+      Gis.zoomFeatureLayer = function( e, feature, layer ) {
+        var bounds = layer.getBounds();
+        Gis.map.fitBounds( bounds );
+        Gis.map.panTo( bounds.getCenter() ); };
+
+
+      // Begin MAIN --- Create a map in <div id="MAP"  center lat lng set  zoom (same as Google Maps)
+      Gis.map = L.map('MAP', { center:[39.761987,-104.980527], zoom:17 } );
+
+      // Add Google Map base layers with the L.Google plugin
+      Gis.baseLayers = {};
+      Gis.baseLayers['Roads']     = new L.Google('ROADMAP',   { maxZoom:20 } );
+      Gis.baseLayers['Satellite'] = new L.Google('SATELLITE', { maxZoom:20 } );
+      Gis.baseLayers['Hybrid']    = new L.Google('HYBRID',    { maxZoom:20 } );
+      Gis.baseLayers['Terrain']   = new L.Google('TERRAIN',   { maxZoom:20 } );
+      Gis.baseLayers['None']      = new L.GeoJSON();
+      Gis.map.addLayer(Gis.baseLayers['Hybrid']); // Turn on the 'Hybrid' base layer in the map
+
+      // Add a markers at locations, attach some popup content to it and open the popup
+      Gis.markers = [
+        L.marker([39.761987,-104.980527]).bindPopup('<div style="font-size:14pt;">DenverJS at</div><img src="code.jpg"/>'),
+        L.marker([39.761063,-104.981521]).bindPopup('<div style="font-size:14pt;">Crema</div>'),
+        L.marker([39.759381,-104.985738]).bindPopup('<div style="font-size:14pt;">Casselman\'s</div>') ];
+
+      // Create marker and polygon overlay layers
+      Gis.overLayers = {};
+      Gis.overLayers['Markers']  = new L.LayerGroup( Gis.markers );
+      Gis.overLayers['Polygons'] = new L.GeoJSON();
+      Gis.map.addLayer( Gis.overLayers['Markers']  ); // Turn on the markers  overlay layer in the map
+      Gis.map.addLayer( Gis.overLayers['Polygons'] ); // Turn on an  polygons overlay layer in the map
+
+      // Read in the GeoJSON Polygon layer in 'upperLarimerGeo.json'
+      Gis.style = { color:'blue', weight:3, opacity:1, fill:'transparent', fillOpacity:0.10 };
+      Gis.url   = 'upperLarimerGeo.json';
+      $.ajax( {
+        url:Gis.url, type:'GET', dataType:'json',
+        success:function( json /*textStatus, jqXHR*/ ) {
+          L.setOptions( Gis.overLayers['Polygons'], { style:Gis.style, onEachFeature:Gis.onFeatureLayer } ); // setOptions before addData
+          Gis.overLayers['Polygons'].addData( json ); },  // Gis.onFeatureLayer call for eacj GeoJSON feature
+        error:function( /*jqXHR, textStatus, errorThrown*/ ) {
+          console.log('Gis.readGeoJSON() Error ' + Gis.url); } });
+
+      // Pass base and overlay layer to leaflets layer control and add control to map
+      Gis.layerControl  = new L.Control.Layers( Gis.baseLayers, Gis.overLayers ).addTo(Gis.map);
+    </script>
+  </body>
+</html>

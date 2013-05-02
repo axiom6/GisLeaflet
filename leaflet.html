@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>GIS with Leaflet.js</title>
+  <meta charset="utf-8">
+  <meta name="description" content="GIS with Leaflet">
+  <meta name="author" content="Tom Flaherty">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <link rel="stylesheet" href="reveal/css/reveal.css">
+  <link rel="stylesheet" href="reveal/css/theme/default.css" id="theme">
+  <link rel="stylesheet" href="reveal/lib/css/zenburn.css">
+  <style>
+    .reveal pre {
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+      display: block; font-family: monospace; font-size: 0.75em; line-height: 1.2em;
+      position: relative; left: -10%; width:120%; margin-top:2%; margin-bottom:2%;
+      text-align: left; word-wrap: break-word; }
+    .fix-width { min-width:300px; display:inline-block; }
+  </style>
+
+</head>
+
+<body>
+
+<div class="reveal">
+
+<!-- Any section element inside of this container is displayed as a slide -->
+<div class="slides">
+
+<section>
+  <h1>GIS with Leaflet.js</h1>
+  <p>
+    <small><a href="http://twitter.com/TheTomFlaherty">@TheTomFlaherty</a></small>
+  </p>
+</section>
+
+
+<section>
+  <h2><a style="padding:2em" href="demos/start.html">Warm Up Demo</a></h2>
+</section>
+<section>
+  <pre class="javascript" style="font-size:.75em; min-height:22em;"><code style="min-height:22em;">
+// Create a map where id="MAP", center at lat long
+var map = L.map('MAP', { center:[39.761987,-104.980527], zoom:17 } );
+
+// Add an OpenStreetMap OSM tiling service
+L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {} ).addTo(map);
+
+// Add a marker at the lat long, attach and open popup content
+L.marker([39.761930,-104.980527]).addTo(map)
+ .bindPopup('DenverJS').openPopup();
+  </code></pre>
+</section>
+
+<section>
+  <h2><a style="padding:2em" href="demos/plugins.html">Leaflet's Plugins</a></h2>
+  <h3>Up to 61 and Counting</h3>
+</section>
+<section>
+  <h2><a style="padding:2em" href="demos/features.html">Leaflet's Features</a></h2>
+</section>
+<section>
+  <h3>In this Lighting Talk</h3>
+  <h3>We Will Cover</h3>
+  <ul>
+    <li>Layers</li>
+    <li>GeoJSON</li>
+    <li>Interactive Zoom</li>
+  </ul>
+</section>
+
+  <section>
+    <h2>CSS & JS Libraries</h2>
+    <pre class="html" style="font-size:.70em;"><code contenteditable>
+&lt;link   href="../lib/leaflet.css" rel="stylesheet"&gt;
+&lt;script  src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"&gt;&lt;/script&gt;
+&lt;script  src="../lib/jquery-2.0.0.js"&gt;&lt;/script&gt;
+&lt;script  src="../lib/leaflet.js"&gt;&lt;/script&gt;
+&lt;script  src="../lib/Google.js"&gt;&lt/script&gt;
+    </code></pre>
+  </section>
+
+<section>
+  <h3>Base Layers</h3>
+  <pre class="javascript" style="font-size:.70em;"><code contenteditable>
+// Add Google Map base layers with the L.Google plugin
+Gis.baseLayers = {};
+Gis.baseLayers['Roads']     = new L.Google('ROADMAP',   { maxZoom:20 } );
+Gis.baseLayers['Satellite'] = new L.Google('SATELLITE', { maxZoom:20 } );
+Gis.baseLayers['Hybrid']    = new L.Google('HYBRID',    { maxZoom:20 } );
+Gis.baseLayers['Terrain']   = new L.Google('TERRAIN',   { maxZoom:20 } );
+Gis.baseLayers['None']      = new L.GeoJSON();
+Gis.map.addLayer(Gis.baseLayers['Hybrid']); // Turn on the 'Hybrid' base layer
+  </code></pre>
+</section>
+<section>
+  <h3>Overlay Marker Array</h3>
+  <pre class="javascript" style="font-size:.48em;"><code contenteditable>
+// Add a markers at locations, attach some popup content to it and open the popup
+Gis.markers = [
+  L.marker([39.761987,-104.980527]).bindPopup('&lt;div style="font-size:14pt;"&gt;DenverJS at&lt;/div&gt;&lt;img src="code.jpg"/&gt;'),
+  L.marker([39.761063,-104.981521]).bindPopup('&lt;div style="font-size:14pt;"&gt;Crema&lt;/div&lt'),
+  L.marker([39.759381,-104.985738]).bindPopup('&lt;div style="font-size:14pt;"&gt;Casselman\'s&gt/div&gt;')
+];
+  </code></pre>
+</section>
+<section>
+  <h3>Overlay Layers</h3>
+  <pre class="javascript" style="font-size:.75em;"><code contenteditable>
+// Create marker and polygon overlay layers
+Gis.overLayers = {};
+Gis.overLayers['Markers']  = new L.LayerGroup( Gis.markers );
+Gis.overLayers['Polygons'] = new L.GeoJSON();
+Gis.map.addLayer( Gis.overLayers['Markers']  ); // Turn on the markers
+Gis.map.addLayer( Gis.overLayers['Polygons'] ); // Turn on an  polygons
+  </code></pre>
+</section>
+<section>
+  <h3>Layer Control</h3>
+  <pre class="javascript" style="font-size:.60em;"><code contenteditable>
+// Pass base and overlay layers to Leaflets layer control and add control to map
+Gis.layerControl = new L.Control.Layers( Gis.baseLayers, Gis.overLayers ).addTo(Gis.map);
+  </code></pre>
+</section>
+
+<section>
+    <h3>GeoJSON for Polygons</h3>
+    <pre class="json" style="font-size:.75em; min-height:22em;"><code style="min-height:22em;">{
+  "type": "FeatureCollection",
+  "features":
+   [
+     { "type": "Feature",
+       "properties": {  "ID":"1", "Name": "Code Block" },
+       "geometry": {
+         "type": "Polygon",
+         "coordinates": [ [
+           [-104.980513,39.762358],[-104.979923,39.761905],
+           [-104.981253,39.760882],[-104.981790,39.761328],
+           [-104.980513,39.762358] ] ] }
+        },
+     { "type": "Feature" },
+     { "type": "Feature" }
+   ]
+}
+    </code></pre>
+ </section>
+ <section>
+    <h2>GeoJSON AJAX Call</h2>
+    <pre class="javascript" style="font-size:.65em;"><code contenteditable>// Read in the GeoJSON Polygon layer in 'upperLarimerGeo.json'
+Gis.style = { color:'blue', weight:3, opacity:1,
+              fill:'transparent', fillOpacity:0.10 };
+Gis.url   = 'upperLarimerGeo.json';
+$.ajax( {
+  url:Gis.url, type:'GET', dataType:'json',
+  success:function( json /*textStatus, jqXHR*/ ) {
+    L.setOptions( Gis.overLayers['Polygons'],      // setOptions before addData()
+      { style:Gis.style, onEachFeature:Gis.onFeatureLayer } );
+    Gis.overLayers['Polygons'].addData( json ); }, // onFeatureLayer on each feature
+  error:function( /*jqXHR, textStatus, errorThrown*/ ) {
+    console.log('Gis.readGeoJSON() Error ' + Gis.url); } });</code></pre>
+</section>
+
+<section>
+    <h3>Enabling Zoom for Each Feature (Polygon)</h3>
+    <pre class="javascript" style="font-size:.60em;"><code contenteditable>
+  // Callback for processing each feature in GeoJSON, here we enable click for zooming
+  Gis.onFeatureLayer = function( feature, layer ) {
+    var callZoom = function(e) {  // Closure that closes on feature layer arguemnts
+        Gis.zoomFeatureLayer( e, feature, layer ); };
+    layer.on( 'click', callZoom  );
+  };
+    </code></pre>
+  </section>
+<section>
+    <h3>Performing Map Zoom when Layer clicked</h3>
+    <pre class="javascript" style="font-size:.75em;"><code contenteditable>
+ // Zoom map to layer bounds and pan to the layer's center
+  Gis.zoomFeatureLayer = function( e, feature, layer ) {
+    var bounds = layer.getBounds();
+    Gis.map.fitBounds( bounds );
+    Gis.map.panTo( bounds.getCenter() );
+  };
+    </code></pre>
+</section>
+
+<section>
+  <section>
+    <h2><a style="padding:2em;" href="demos/layers.html">Completed Demo</a></h2>
+    <h3>with Layers, GeoJSON and Zoom</h3>
+  </section>
+</section>
+
+<section>
+  <h2>Further Information</h2>
+  <ul>
+    <li>GisLeaflet Slide Deck & Demos on GitHub</a></li>
+    <li><a href="https://github.com/axiom6/GisLeaflet">https://github.com/axiom6/GisLeaflet</a></li>
+  </ul>
+</section>
+
+<section>
+  <h2>References</h2>
+  <ul>
+    <li><div class="fix-width">Leaflet.js Site</div><a href="http://leafletjs.com">leafletjs.com</a></li>
+    <li><div class="fix-width">Leaflet.js GitHub</div><a href="https://github.com/Leaflet/Leaflet">github.com/Leaflet/Leaflet</a></li>
+    <li><div class="fix-width">GeoJSON</div><a href="http://www.geojson.org">www.geojson.org</a></li>
+    <li><div class="fix-width">Reveal Slide Deck</div><a href="https://github.com/hakimel/reveal.js">github.com/hakimel/reveal.js</a></li>
+  </ul>
+</section>
+
+<section>
+  <h1>THE END</h1>
+</section>
+
+</div>
+
+</div>
+
+<script src="reveal/lib/js/head.min.js"></script>
+<script src="reveal/js/reveal.js"></script>
+
+<script>
+
+  // Full list of configuration options available here:
+  // https://github.com/hakimel/reveal.js#configuration
+  Reveal.initialize( { controls:true, progress:true, history:true, center:true,
+    theme:      Reveal.getQueryHash().theme,                   // available themes are in /css/theme
+    transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+    dependencies: [                                            // Optional libraries used to extend on reveal.js
+      { src: 'reveal/lib/js/classList.js',          condition: function() { return !document.body.classList; } },
+      { src: 'reveal/plugin/markdown/showdown.js',  condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'reveal/plugin/markdown/markdown.js',  condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'reveal/plugin/zoom-js/zoom.js',       condition: function() { return !!document.body.classList; }, async: true },
+      { src: 'reveal/plugin/notes/notes.js',        condition: function() { return !!document.body.classList; }, async: true },
+      { src: 'reveal/plugin/highlight/highlight.js', callback: function() { hljs.initHighlightingOnLoad();    }, async: true }
+      // { src: 'reveal/plugin/remotes/remotes.js',    condition: function() { return !!document.body.classList; }, async: true }
+    ]
+  });
+
+</script>
+
+</body>
+</html>

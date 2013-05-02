@@ -1,0 +1,8 @@
+
+GIS with Leaflet.js by Tom Flaherty
+
+Leaflet (http://leafletjs.com/) is a modern open-source JavaScript library for mobile-friendly interactive maps.
+It was developed by Vladimir Agafonkin (http://agafonkin.com/en/) and its GitHub source is at (https://github.com/Leaflet/Leaflet)
+In this talk we will build a map of the Upper Larimer area around Code (http://www.code-talent.com/ and look at some cool GIS demos.
+The complete slide deck with reveal.js, demos and Leaflet.js v0.6-dev library can be found on GitHub at:
+https://github.com/axiom6/GIS-Leaflet

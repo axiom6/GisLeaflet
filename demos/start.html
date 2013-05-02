@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+
+  <head>
+    <title>Start</title>
+    <link   href="../lib/leaflet.css" rel="stylesheet">
+    <script  src="../lib/leaflet.js"></script>
+  <head>
+  <body style="background:black;">
+     <div id = "MAP" style="position:absolute; top:1em; left:1em; right:1em; bottom:1em; border:2px solid black;"></div>
+     <script>
+       // Create a map where id="MAP", center at lat long
+       var map = L.map('MAP', { center:[39.761987,-104.980527], zoom:17 } );
+
+       // Add an OpenStreetMap OSM tiling service
+       L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {} ).addTo(map);
+
+       // Add a marker at the lat long, attach and open popup content
+       L.marker([39.761930,-104.980527]).addTo(map)
+         .bindPopup('DenverJS').openPopup();
+     </script>
+  </body>
+</html>
